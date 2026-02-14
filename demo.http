@@ -1,0 +1,47 @@
+### FinTech Ledger API - Testing Suite
+# Use the "REST Client" extension in VS Code to run these requests.
+
+@baseUrl = http://localhost:3000
+
+### 1. Register a new User
+# @name registerUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "user@example.com",
+    "password": "Password123!"
+}
+
+### 2. Login to get JWT Token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "user@example.com",
+    "password": "Password123!"
+}
+
+### 3. Save the Token from the login response
+@authToken = {{login.response.body.data.token}}
+
+### 4. Create a Wallet
+# @name createWallet
+POST {{baseUrl}}/api/wallets
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "currency": "USD"
+}
+
+### 5. Get Wallet Balance
+# Replace {walletId} with the ID from the createWallet response
+@walletId = {{createWallet.response.body.data.id}}
+
+GET {{baseUrl}}/api/wallets/{{walletId}}/balance
+Authorization: Bearer {{authToken}}
+
+### 6. Health Check
+GET {{baseUrl}}/health

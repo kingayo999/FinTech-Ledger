@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  passwordHash  String
+  role          Role       @default(USER)
+  wallets       Wallet[]
+  auditLogs     AuditLog[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Wallet {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  currency      String        @default("USD")
+  balance       Decimal       @default(0) @db.Decimal(20, 8)
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Transaction {
+  id            String        @id @default(uuid())
+  description   String?
+  referenceId   String?       @unique
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime      @default(now())
+}
+
+model LedgerEntry {
+  id            String      @id @default(uuid())
+  walletId      String
+  wallet        Wallet      @relation(fields: [walletId], references: [id])
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  amount        Decimal     @db.Decimal(20, 8)
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+
+  @@index([walletId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id])
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
