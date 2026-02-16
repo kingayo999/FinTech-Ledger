@@ -23,25 +23,109 @@ Content-Type: application/json
     "password": "Password123!"
 }
 
-### 3. Save the Token from the login response
-@authToken = {{login.response.body.data.token}}
+### 3. Save the Access and Refresh Tokens
+@accessToken = {{login.response.body.data.accessToken}}
+@refreshToken = {{login.response.body.data.refreshToken}}
 
-### 4. Create a Wallet
-# @name createWallet
+### 4. Refresh Access Token
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### 5. List User Wallets
+# @name listWallets
+GET {{baseUrl}}/api/wallets
+Authorization: Bearer {{accessToken}}
+
+### 6. Get Wallet Balance
+# Replace with actual wallet ID from registration (auto-created)
+@walletId = {{listWallets.response.body.data[0].id}}
+
+GET {{baseUrl}}/api/wallets/{{walletId}}/balance
+Authorization: Bearer {{accessToken}}
+
+### 7. Fund Wallet (Mock Money)
+POST {{baseUrl}}/api/wallets/{{walletId}}/fund
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "amount": 1000
+}
+
+### 8. Create Second Wallet for Transfer Testing
+# @name createSecondWallet
 POST {{baseUrl}}/api/wallets
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
     "currency": "USD"
 }
 
-### 5. Get Wallet Balance
-# Replace {walletId} with the ID from the createWallet response
-@walletId = {{createWallet.response.body.data.id}}
+### 9. Transfer Money Between Wallets
+@secondWalletId = {{createSecondWallet.response.body.data.id}}
 
-GET {{baseUrl}}/api/wallets/{{walletId}}/balance
-Authorization: Bearer {{authToken}}
+POST {{baseUrl}}/api/transfer
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
-### 6. Health Check
+{
+    "fromWalletId": "{{walletId}}",
+    "toWalletId": "{{secondWalletId}}",
+    "amount": 250,
+    "description": "Test transfer"
+}
+
+### 10. Logout (Revoke Refresh Token)
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### 11. Health Check
 GET {{baseUrl}}/health
+
+### === ADMIN ENDPOINTS ===
+
+### 12. Register an Admin User
+# @name registerAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "AdminPass123!",
+    "role": "ADMIN"
+}
+
+### 13. Admin Login
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "AdminPass123!"
+}
+
+### 14. Save Admin Token
+@adminToken = {{adminLogin.response.body.data.accessToken}}
+
+### 15. Get Audit Logs (Admin Only)
+GET {{baseUrl}}/admin/audit-logs?page=0&limit=50
+Authorization: Bearer {{adminToken}}
+
+### 16. Get Wallet Ledger History (Admin Only)
+GET {{baseUrl}}/admin/ledger/wallet/{{walletId}}?page=0&limit=50
+Authorization: Bearer {{adminToken}}
+
+### 17. Get Transaction Ledger (Admin Only - Verify Double-Entry)
+GET {{baseUrl}}/admin/ledger/transaction/<transaction-id>
+Authorization: Bearer {{adminToken}}

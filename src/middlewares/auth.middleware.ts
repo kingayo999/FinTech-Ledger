@@ -24,6 +24,11 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 
     req.user = payload;
+
+    // Optional: Check if user is still active in DB for every request
+    // This is safer but adds DB load. For now, we trust the short-lived token.
+    // In a high-security environment, we would check user.isActive here.
+
     next();
 };
 

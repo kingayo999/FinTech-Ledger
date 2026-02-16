@@ -12,11 +12,21 @@ export const transferSchema = z.object({
         toWalletId: z.string().uuid(),
         amount: z.number().positive(),
         description: z.string().min(1).max(255),
+        referenceId: z.string().uuid().optional(),
     }),
 });
 
 export const getBalanceSchema = z.object({
     params: z.object({
         walletId: z.string().uuid(),
+    }),
+});
+
+export const fundSchema = z.object({
+    params: z.object({
+        walletId: z.string().uuid(),
+    }),
+    body: z.object({
+        amount: z.number().positive(),
     }),
 });

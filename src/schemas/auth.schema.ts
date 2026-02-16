@@ -14,3 +14,15 @@ export const loginSchema = z.object({
         password: z.string(),
     }),
 });
+
+export const refreshSchema = z.object({
+    body: z.object({
+        refreshToken: z.string(),
+    }),
+});
+
+export const logoutSchema = z.object({
+    body: z.object({
+        refreshToken: z.string(),
+    }),
+});
