@@ -221,34 +221,7 @@ npm run test:integration
 
 ---
 
-## 🎓 Interview Guide
 
-### "Explain your project in 2 minutes"
-
-> "I built a double-entry ledger system for handling financial transactions. The core challenge was ensuring **data integrity** and **concurrency safety** in a multi-user environment.
->
-> Every transfer creates two ledger entries—one debit, one credit—that must sum to zero. This is the foundation of accounting and ensures money never 'appears' or 'disappears.'
->
-> To prevent race conditions, I implemented **pessimistic locking** using PostgreSQL's SELECT FOR UPDATE. When two users try to transfer from the same wallet simultaneously, the second transaction waits until the first completes, then sees the updated balance.
->
-> I also made the ledger **append-only**—no updates or deletes allowed. This creates a tamper-proof audit trail, critical for financial compliance.
->
-> The system uses **dual-token auth** (short access tokens + long refresh tokens) and **tiered rate limiting** to protect against brute force attacks.
->
-> The tech stack is TypeScript, Express, Prisma, and PostgreSQL, chosen for type safety and transactional reliability."
-
-### Common Follow-Up Questions
-
-**Q: How do you handle concurrent transfers?**
-> "I use pessimistic locking with alphabetical key ordering to prevent deadlocks. When transferring from Wallet A to Wallet B, the system locks them in sorted order (e.g., A then B). Two simultaneous transfers involving the same wallets will execute serially."
-
-**Q: What if the database fails mid-transaction?**
-> "All transfers are wrapped in database transactions. If the DB crashes after debiting Wallet A but before crediting Wallet B, PostgreSQL rolls back both operations on restart. ACID compliance guarantees atomicity."
-
-**Q: How do you prevent negative balances?**
-> "The transfer service checks the sender's balance while holding a lock on their wallet row. If balance < amount, the transaction is rejected before any ledger entries are created."
-
----
 
 ## 🤝 Contributing
 
@@ -264,6 +237,6 @@ This project is licensed under the MIT License.
 
 ## 👤 Author
 
-**Kingsley Olayanju**
+**Ayobami Olayanju**
 - GitHub: [@kingayo999](https://github.com/kingayo999)
 - Repository: [FinTech-Ledger](https://github.com/kingayo999/FinTech-Ledger)
